@@ -1,0 +1,46 @@
+---
+title: 'Project 2: Analyzing  Weather Data'
+author: "Chris van Hasselt"
+date: "Thursday, August 21, 2014"
+output: html_document
+---
+
+
+## Synopsis
+
+Severe weather events disrupt the lives of individuals, families, and communities wherever they occur.  Injuries, fatalities, and property damage attributed to severe weather events strain the financial resources of responsible government agencies, and non-governmental actors involved in disaster response.  Disaster responders are motivated to find appropriate preventative measures that will minimize the impact of severe weather events.
+
+This project involves exploring the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database. This database tracks characteristics of major storms and weather events in the United States, including when and where they occur, as well as estimates of any fatalities, injuries, and property damage.
+
+
+## Assumptions and Rationale
+
+The weather event data-set used in this analysis includes data from 1950 through November, 2011.  For purposes of this analysis, data prior to 1990 is excluded.  In 1990, the Intergovernmental Panel on Climate Change (IPCC) issued its first report stating with certainty that  "emissions resulting from human activities are substantially increasing the atmospheric concentrations of the greenhouse gases." [^1]  
+
+The IPCC statement was a watershed moment when a carefully vetted review of climate science concluded that global warming was occurring and that, while unanswered questions remained, it was likely that human activities were a driving force behind climate change. Climate change occurs over lengthy time periods, without a clear beginning.  While the choice is arbitrary, the significance of the IPCC report allows us to demark 1990 as the year that climate change "began". For purposes of a forward-looking analysis focused on prevention, I make the assumption that future weather patterns will be more similar to patterns after 1990 rather than patterns prior to 1990.
+
+
+## Data Processing
+
+The data is available from the following URL:
+https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2
+
+
+```{r} 
+
+# Download the file, if not already downloaded, creating directory if necessary. (download will take some time)
+if (!file.exists("data/StormData.bz2")) {
+        dir.create("data",showWarnings=FALSE)
+        download.file("http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2", "data/StormData.bz2")
+}
+
+# Loading from storm data file.
+weatherData <- read.csv.sql(bzfile("data/StormData.bz2"),header=TRUE)
+
+```
+
+
+## Results
+
+****
+[^1]: Climate Change: The IPCC Scientific Assessment (1990), http://www.ipcc.ch/publications_and_data/publications_ipcc_first_assessment_1990_wg1.shtml (see Policymakers Summary)
