@@ -35,7 +35,7 @@ if (!file.exists("data/StormData.bz2")) {
 }
 
 # Loading from storm data file.
-weatherData <- read.csv.sql(bzfile("data/StormData.bz2"),header=TRUE)
+weatherData <- read.csv(bzfile("data/StormData.bz2"),header=TRUE)
 
 ```
 
