@@ -34,13 +34,40 @@ if (!file.exists("data/StormData.bz2")) {
         download.file("http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2", "data/StormData.bz2")
 }
 
-# Loading from storm data file.
-weatherData <- read.csv(bzfile("data/StormData.bz2"),header=TRUE)
+# Loading from storm data file, using only specific columns
+weatherData <- read.csv(bzfile("data/StormData.bz2"),
+                        header=TRUE,
+                        stringsAsFactors=FALSE,
+                        nrow=100000)
+
+# Convert BGN_DATE column to actual dates; convert EVTYPE to factor
+weatherData$BGN_DATE <- as.Date(weatherData$BGN_DATE,format="%m/%d/%Y")
+weatherData$EVTYPE   <- as.factor(weatherData$EVTYPE)
+
+# Create reduced data-set from 1990 on
+weather1990 <- weatherData[weatherData$BGN_DATE >= '1990-01-01',]
+
 
 ```
 
 
 ## Results
+
+
+### Public Health Impact
+
+Considering the public health impact, the number of injuries and fatalities for each event are combined as one value. This will not be a true measure of impact, as the severity of injuries (scrapes and bruises vs. blunt head trauma) will surely have an impact on the health of affected communities.  Nevertheless, the data can give us a rough picture of public health impact.
+
+```{r}
+
+weather1990$phImpact <- weather1990$FATALITIES +  weather1990$INJURIES
+
+
+```
+
+
+
+### Economic Impact
 
 ****
 [^1]: Climate Change: The IPCC Scientific Assessment (1990), http://www.ipcc.ch/publications_and_data/publications_ipcc_first_assessment_1990_wg1.shtml (see Policymakers Summary)
