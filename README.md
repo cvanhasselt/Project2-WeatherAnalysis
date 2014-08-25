@@ -6,3 +6,5 @@ Severe weather events disrupt the lives of individuals, families, and communitie
 This project involves exploring the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database. This database tracks characteristics of major storms and weather events in the United States, including when and where they occur, as well as estimates of any fatalities, injuries, and property damage.
 
 The GIT aspects of this are just as confusing as R.
+
+
