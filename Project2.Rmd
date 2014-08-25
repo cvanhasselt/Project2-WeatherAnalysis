@@ -1,14 +1,14 @@
 ---
-title: 'Project 2: Analyzing  Weather Data'
+title: 'Project 2: Determining Response Priorities for Severe Weather Events'
 author: "Chris van Hasselt"
-date: "Thursday, August 21, 2014"
+date: "Sunday, August 24, 2014"
 output: html_document
 ---
 
 
 ## Synopsis
 
-Severe weather events disrupt the lives of individuals, families, and communities wherever they occur.  Injuries, fatalities, and property damage attributed to severe weather events strain the financial resources of responsible government agencies, and non-governmental actors involved in disaster response.  Disaster responders are motivated to find appropriate preventative measures that will minimize the impact of severe weather events.
+Severe weather events disrupt the lives of individuals, families, and communities wherever they occur.  Injuries, fatalities, and property damage attributed to severe weather events strain the financial resources of responsible government agencies and non-governmental actors involved in disaster response.  Disaster responders are motivated to find appropriate preventative measures that will minimize the impact of severe weather events.
 
 This project involves exploring the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database. This database tracks characteristics of major storms and weather events in the United States, including when and where they occur, as well as estimates of any fatalities, injuries, and property damage.
 
@@ -17,7 +17,7 @@ This project involves exploring the U.S. National Oceanic and Atmospheric Admini
 
 The weather event data-set used in this analysis includes data from 1950 through November, 2011.  For purposes of this analysis, data prior to 1990 is excluded.  In 1990, the Intergovernmental Panel on Climate Change (IPCC) issued its first report stating with certainty that  "emissions resulting from human activities are substantially increasing the atmospheric concentrations of the greenhouse gases." [^1]  
 
-The IPCC statement was a watershed moment when a carefully vetted review of climate science concluded that global warming was occurring and that, while unanswered questions remained, it was likely that human activities were a driving force behind climate change. Climate change occurs over lengthy time periods, without a clear beginning.  While the choice is arbitrary, the significance of the IPCC report allows us to demark 1990 as the year that climate change "began". For purposes of a forward-looking analysis focused on prevention, I make the assumption that future weather patterns will be more similar to patterns after 1990 rather than patterns prior to 1990.
+The IPCC statement was a watershed moment when a carefully vetted review of climate science concluded that global warming was occurring and that, while unanswered questions remained, it was likely that human activities were a driving force behind climate change. Climate change occurs over lengthy time periods, without a clear beginning or end.  While the choice is arbitrary, the significance of the IPCC report allows us to demark 1990 as the year that climate change "began". For purposes of a forward-looking analysis focused on prevention, I make the assumption that future weather patterns will be more similar to patterns after 1990 rather than patterns prior to 1990.
 
 
 ## Data Processing
@@ -25,8 +25,10 @@ The IPCC statement was a watershed moment when a carefully vetted review of clim
 The data is available from the following URL:
 https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2
 
+The following code downloads the dataset if necessary, storing it locally for use and processing it for analysis.  Because of the inconsistent recording of data event names, a good deal of treatment of the data is to "normalize" event type names.  This analysis would benefit from expert assistance with the consolidation of event types.
 
-```{r} 
+
+```{r data processing,cache = TRUE} 
 
 # Download the file, if not already downloaded, creating directory if necessary. (download will take some time)
 if (!file.exists("data/StormData.bz2")) {
@@ -34,40 +36,158 @@ if (!file.exists("data/StormData.bz2")) {
         download.file("http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2", "data/StormData.bz2")
 }
 
-# Loading from storm data file, using only specific columns
+# Loading from storm data file as a data frame for use
 weatherData <- read.csv(bzfile("data/StormData.bz2"),
                         header=TRUE,
-                        stringsAsFactors=FALSE,
-                        nrow=100000)
+                        stringsAsFactors=FALSE)
 
 # Convert BGN_DATE column to actual dates; convert EVTYPE to factor
 weatherData$BGN_DATE <- as.Date(weatherData$BGN_DATE,format="%m/%d/%Y")
+
+# Convert all EVTYPE values to upper case
+weatherData$EVTYPE <- toupper(weatherData$EVTYPE)
+
+# Conversion of strings in EVTYPE to help consolidate data.  The selections made here would benefit from consideration by a meteorologist.
+weatherData[grep("HAIL",weatherData$EVTYPE),]$EVTYPE <- "HAIL" 
+weatherData[grep("TSTM",weatherData$EVTYPE),]$EVTYPE <- "THUNDERSTORM"
+weatherData[grep("THUNDERSTORM",weatherData$EVTYPE),]$EVTYPE <- "THUNDERSTORM"
+weatherData[grep("FLOOD",weatherData$EVTYPE),]$EVTYPE <- "FLOOD" 
+weatherData[grep("FLD",weatherData$EVTYPE),]$EVTYPE <- "FLOOD" 
+weatherData[grep("TORNADO",weatherData$EVTYPE),]$EVTYPE <- "TORNADO"
+weatherData[grep("GUSTNADO",weatherData$EVTYPE),]$EVTYPE <- "TORNADO"
+weatherData[grep("TROPICAL STORM",weatherData$EVTYPE),]$EVTYPE <- "TROPICAL STORM"
+weatherData[grep("HURRICANE",weatherData$EVTYPE),]$EVTYPE <- "HURRICANE"
+weatherData[grep("TYPHOON",weatherData$EVTYPE),]$EVTYPE <- "HURRICANE"
+weatherData[grep("SNOW",weatherData$EVTYPE),]$EVTYPE <- "SNOW"
+weatherData[grep("BLIZZARD",weatherData$EVTYPE),]$EVTYPE <- "SNOW"
+weatherData[grep("ICE",weatherData$EVTYPE),]$EVTYPE <- "ICE EVENT"
+weatherData[grep("GLAZE",weatherData$EVTYPE),]$EVTYPE <- "ICE EVENT"                
+weatherData[grep("WIND",weatherData$EVTYPE),]$EVTYPE <- "WIND"
+weatherData[grep("WND",weatherData$EVTYPE),]$EVTYPE <- "WIND"
+weatherData[grep("FIRE",weatherData$EVTYPE),]$EVTYPE <- "FIRE"
+weatherData[grep("SMOKE",weatherData$EVTYPE),]$EVTYPE <- "FIRE"
+weatherData[grep("FUNNEL",weatherData$EVTYPE),]$EVTYPE <- "FUNNEL"
+weatherData[grep("WATERSPOUT",weatherData$EVTYPE),]$EVTYPE <- "WATERSPOUT"
+weatherData[grep("WATER SPOUT",weatherData$EVTYPE),]$EVTYPE <- "WATERSPOUT"
+weatherData[grep("WAYTERSPOUT",weatherData$EVTYPE),]$EVTYPE <- "WATERSPOUT"
+weatherData[grep("FREEZ",weatherData$EVTYPE),]$EVTYPE <- "FREEZE"
+weatherData[grep("RAIN",weatherData$EVTYPE),]$EVTYPE <- "RAIN"
+weatherData[grep("PRECIP",weatherData$EVTYPE),]$EVTYPE <- "RAIN"
+weatherData[grep("LIGHTNING",weatherData$EVTYPE),]$EVTYPE <- "LIGHTNING"
+weatherData[grep("FOG",weatherData$EVTYPE),]$EVTYPE <- "FOG"
+weatherData[grep("SURF",weatherData$EVTYPE),]$EVTYPE <- "SURF"
+weatherData[grep("SEAS",weatherData$EVTYPE),]$EVTYPE <- "SURF"
+weatherData[grep("WAVE",weatherData$EVTYPE),]$EVTYPE <- "SURF"
+weatherData[grep("RIP CURRENT",weatherData$EVTYPE),]$EVTYPE <- "SURF"
+weatherData[grep("HIGH TIDES",weatherData$EVTYPE),]$EVTYPE <- "SURF"
+weatherData[grep("STORM SURGE",weatherData$EVTYPE),]$EVTYPE <- "SURF" 
+weatherData[grep("WINT",weatherData$EVTYPE),]$EVTYPE <- "WINTER STORM"
+weatherData[grep("DROUGHT",weatherData$EVTYPE),]$EVTYPE <- "DROUGHT"
+weatherData[grep("WARM",weatherData$EVTYPE),]$EVTYPE <- "HEAT EVENT"
+weatherData[grep("HEAT",weatherData$EVTYPE),]$EVTYPE <- "HEAT EVENT"
+weatherData[grep("RECORD HIGH",weatherData$EVTYPE),]$EVTYPE <- "HEAT EVENT"
+weatherData[grep("MUD",weatherData$EVTYPE),]$EVTYPE <- "MUDSLIDE"
+weatherData[grep("COLD",weatherData$EVTYPE),]$EVTYPE <- "COLD EVENT"
+weatherData[grep("VOLCAN",weatherData$EVTYPE),]$EVTYPE <- "VOLCANIC EVENT"
+
+# Convert event types to factor, for aggregation and plotting
 weatherData$EVTYPE   <- as.factor(weatherData$EVTYPE)
 
 # Create reduced data-set from 1990 on
 weather1990 <- weatherData[weatherData$BGN_DATE >= '1990-01-01',]
 
-
 ```
-
 
 ## Results
 
+For planning purposes, the public health and economic impact of 
 
 ### Public Health Impact
 
-Considering the public health impact, the number of injuries and fatalities for each event are combined as one value. This will not be a true measure of impact, as the severity of injuries (scrapes and bruises vs. blunt head trauma) will surely have an impact on the health of affected communities.  Nevertheless, the data can give us a rough picture of public health impact.
+Considering the public health impact, the number of injuries and fatalities for each event are combined as one value. To have a true measure of public health impact, the severity of injuries (scrapes and bruises vs. blunt head trauma) should be taken into account.  However, the dataset does not include that type of information. 
 
-```{r}
+```{r public health impact}
 
-weather1990$phImpact <- weather1990$FATALITIES +  weather1990$INJURIES
+# Create a column variable measuring the public health impact during each weather event.
+weather1990$PHIMPACT <- weather1990$FATALITIES + weather1990$INJURIES
 
+# We are only interested in significant public health impact, arbitrarily chosen as a level of 50
+weatherWithPHIMPACT <- weather1990[weather1990$PHIMPACT > 50,]
+
+# Aggregating the data by EVTYPE
+aggPHIMPACT <- aggregate(weatherWithPHIMPACT$PHIMPACT,list(weatherWithPHIMPACT$EVTYPE),sum,na.rm=TRUE)
+names(aggPHIMPACT) <- c("EVTYPE","PHIMPACT")
+
+# plot the public health impact as a barplot, comparing the sum of public health impacts grouped by weather event type. A horizontal bar plot is used to make the categories more readable
+# barplot(tapply(weatherWithPHIMPACT$PHIMPACT,weatherWithPHIMPACT$EVTYPE,sum),
+barplot(aggPHIMPACT$PHIMPACT,
+        names.arg = aggPHIMPACT$EVTYPE,
+        main = "Public Health Impact by Weather Event Type",
+        horiz = TRUE,
+        cex.names = 0.6,
+        las = 1,
+        xlab = "Fatalities plus Injuries")
 
 ```
 
-
+Based on this high-level analysis of the public health impact of severe weather events, the most damaging type of events are tornadoes, heat events, and floods.
 
 ### Economic Impact
+
+When a severe weather event occurs, property and crop damage disrupt the economic vitality of the affected community.  Assessing potential economic consequences of severe weather is an essential part of emergency preparedness.  
+
+```{r ECHO=FALSE}
+par(mar=c(1,6,1,1))
+```
+
+
+```{r economic impact}
+# simple function to convert damage exponent into a numeric value
+dmgFactor <- function (x) {
+    if (!is.na(x) & (x == "M"))  {
+        return(1000000)
+    } else   if (!is.na(x) & (x == "K"))  {
+        return(1000)
+    } else {
+        return(1)
+    }
+}
+
+# Create a variable translating the damage exponents into a number
+weather1990$PDMGFACTOR = sapply(weather1990$PROPDMGEXP,dmgFactor)
+weather1990$CDMGFACTOR = sapply(weather1990$CROPDMGEXP,dmgFactor)
+
+# Create a variable representing total economic impact, in thousands of dollars
+weather1990$TOTALECONDMG = (weather1990$PDMGFACTOR * weather1990$PROPDMG) +
+                    (weather1990$CDMGFACTOR * weather1990$CROPDMG) / 1000000
+
+# Create a subset representing with TOTALECONDMG greater than 10,000,000 million dollars
+weatherWithECONIMPACT <- weather1990[weather1990$TOTALECONDMG > 10000000,]
+
+aggECONIMPACT <- aggregate(weatherWithECONIMPACT$TOTALECONDMG,list(weatherWithECONIMPACT$EVTYPE),sum,na.rm=TRUE)
+names(aggECONIMPACT) <- c("EVTYPE","ECONIMPACT")
+
+
+# plot the economic impact
+barplot(aggECONIMPACT$ECONIMPACT,
+        names.arg = aggECONIMPACT$EVTYPE,
+        main = "Economic Impact by Weather Event Type",
+        horiz = TRUE,
+        cex.names = 0.5,
+        las = 1,
+        xlab = "Economic impact in dollars (MILLIONS)")
+
+```
+
+Based on this high-level analysis of the economic impact of severe weather events, the most damaging type of events are floods, tornadoes, and hail.
+
+
+### Conclusion
+
+It is clear from the analysis of NOAAs severe weather event data-set that floods, tornados, and heat events have the most public health impact, while floods, tornados, and hail have the most economic impact.  While a more careful analysis may reveal nuances to further aid disaster response, the broad conclusion from this analysis is that disaster preparedness efforts should be focused on responding to flood and tornado events, both of which have a readily characterized geographic component. 
+
+Further analysis should focus on what areas of the country these events are likely to occur, so that preparedness programs and disaster supply chains can be strengthened in the geographic hot-spots where these events are likely.
+
 
 ****
 [^1]: Climate Change: The IPCC Scientific Assessment (1990), http://www.ipcc.ch/publications_and_data/publications_ipcc_first_assessment_1990_wg1.shtml (see Policymakers Summary)
